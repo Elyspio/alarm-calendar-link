@@ -1,12 +1,11 @@
 import React, {Component} from 'react';
 import {connect, ConnectedProps} from "react-redux";
-import {RootState} from "../../../store/reducer";
 import {Dispatch} from "redux";
 import {Button, Surface, Text} from "react-native-paper";
 import {ScrollView, StyleSheet} from "react-native";
-import clone from "lodash/cloneDeep"
 import {height} from "../../constants/Layout";
 import {secondary} from "../../constants/Colors";
+import {RootState} from "../../../store/reducer";
 
 const mapStateToProps = (state: RootState) => ({store: state})
 
@@ -20,28 +19,6 @@ type State = {
     current: any,
     parent: string[]
 }
-
-
-function stringify(obj: { [key: string]: any }) {
-    obj = clone(obj);
-    const keys = Object.keys(obj);
-    keys.forEach(k => {
-        const innerKeys = Object.keys(obj[k]);
-        innerKeys.forEach(kk => {
-            const innerKeys = Object.keys(obj[k][kk]);
-            innerKeys.forEach(kkk => {
-                const data = obj[k][kk][kkk];
-                if (typeof data === "object") {
-                    obj[k][kk][kkk] = obj[k][kk][kkk].toString();
-                }
-            })
-        })
-    })
-
-    return JSON.stringify(obj, undefined, 4)
-
-}
-
 
 class StoreExplorer extends Component<ReduxTypes, State> {
 
@@ -58,7 +35,7 @@ class StoreExplorer extends Component<ReduxTypes, State> {
 
     render() {
 
-        const keys = Object.keys(this.state.current);
+        const keys = Object.keys(this.state.current || {});
 
         return (
             <Surface style={style.main}>
@@ -66,14 +43,18 @@ class StoreExplorer extends Component<ReduxTypes, State> {
                     <Text style={style.title}>{this.state.parent.length > 0 ? this.state.parent.join("/") : "/"}</Text>
                 </Surface>
 
-                <Surface style={style.keys}>
+                <Surface style={style.keysContainer}>
                     <Button onPress={this.back} color={secondary}>Back</Button>
-                    {keys.map(k =>
-                        <Button onPress={() => this.explore(k)}>{k}</Button>
-                    )}
+                    <ScrollView horizontal={true} style={style.keys}>
+                        {keys.map(k =>
+                            <Button onPress={() => this.explore(k)}>{k}</Button>
+                        )}
+                    </ScrollView>
                 </Surface>
 
-                <ScrollView style={style.json}>
+
+
+                <ScrollView style={style.json} >
                     <Text>{JSON.stringify(this.state.current, undefined, 4)}</Text>
                 </ScrollView>
             </Surface>
@@ -128,9 +109,11 @@ const style = StyleSheet.create({
         overflow: "hidden",
     },
     keys: {
-        display: "flex",
-        flexDirection: "row",
         marginBottom: 20
+    },
+    keysContainer: {
+        display: "flex",
+        flexDirection: "row"
     }
 })
 
